@@ -36,13 +36,24 @@ Each action shows:
 
 ## Install
 
+### From source
+
 ```bash
-npm install -g git-undo
+git clone https://github.com/CuteAnimeGirl1337/git-undo.git
+cd git-undo
+bun install
 ```
 
-Or run directly:
+Then either run it directly:
 ```bash
-npx git-undo
+bun src/index.ts
+```
+
+Or build and link it globally so you can use `git-undo` anywhere:
+```bash
+bun run build
+npm link
+git-undo
 ```
 
 ## Usage
@@ -92,7 +103,7 @@ git-undo list -n 25
 ## Requirements
 
 - Git 2.x+
-- Node.js 18+ or Bun
+- [Bun](https://bun.sh) (for building from source)
 
 ## License
 
