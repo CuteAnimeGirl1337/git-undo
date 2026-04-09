@@ -152,7 +152,7 @@ function parseAction(
       detail: msg,
       description: `Merge commit: "${msg}"`,
       danger: "caution",
-      undoCommand: `git reset --hard HEAD~1`,
+      undoCommand: prevHash ? `git reset --hard ${prevHash}` : `git reset --hard HEAD~1`,
     };
   }
 
@@ -235,7 +235,7 @@ function parseAction(
       detail,
       description: `Merged: ${detail}`,
       danger: "caution",
-      undoCommand: `git reset --hard HEAD~1`,
+      undoCommand: prevHash ? `git reset --hard ${prevHash}` : `git reset --hard HEAD~1`,
     };
   }
 

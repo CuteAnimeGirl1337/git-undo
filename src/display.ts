@@ -81,7 +81,7 @@ export function displayEntriesJson(entries: ReflogEntry[]): void {
   console.log(JSON.stringify(output, null, 2));
 }
 
-export function displayUndoPreview(entry: ReflogEntry): void {
+export function displayUndoPreview(entry: ReflogEntry, showWarnings: boolean = true): void {
   console.log();
   console.log(chalk.bold("  Undoing your last action:"));
   console.log();
@@ -97,14 +97,14 @@ export function displayUndoPreview(entry: ReflogEntry): void {
     console.log(`  Will run: ${chalk.cyan.bold(entry.undoCommand)}`);
     console.log();
 
-    if (entry.danger === "risky") {
+    if (showWarnings && entry.danger === "risky") {
       console.log(
         chalk.red.bold(
           "  ⚠  This is a risky operation — you may lose uncommitted changes!"
         )
       );
       console.log();
-    } else if (entry.danger === "caution") {
+    } else if (showWarnings && entry.danger === "caution") {
       console.log(
         chalk.yellow("  ⚠  This operation modifies your history. Proceed with care.")
       );

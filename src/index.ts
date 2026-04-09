@@ -53,7 +53,7 @@ program
     }
 
     const entry = entries[0];
-    displayUndoPreview(entry);
+    displayUndoPreview(entry, !opts.yes);
 
     if (!entry.undoCommand) {
       process.exit(1);
@@ -109,7 +109,7 @@ program
     }
 
     const entry = entries[idx];
-    displayUndoPreview(entry);
+    displayUndoPreview(entry, !opts.yes);
 
     if (!entry.undoCommand) {
       process.exit(1);
