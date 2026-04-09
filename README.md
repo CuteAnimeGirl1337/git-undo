@@ -8,6 +8,37 @@
 
 Every developer has panicked after a bad `git reset`, accidental `commit --amend`, or wrong branch checkout. `git-undo` shows your recent actions in **human-readable language** and lets you reverse them with one command.
 
+---
+
+## Quick Start
+
+```bash
+git clone https://github.com/CuteAnimeGirl1337/git-undo.git
+cd git-undo
+bun install
+```
+
+### Run directly
+
+```bash
+bun src/index.ts
+```
+
+### Install globally (use `git-undo` from anywhere)
+
+```bash
+bun build src/index.ts --outfile bin/git-undo.js --target node
+bun link
+```
+
+Then you can use it from any git repo:
+
+```bash
+git-undo
+```
+
+---
+
 ## Before & After
 
 **Before** (raw `git reflog`):
@@ -34,51 +65,18 @@ Each action shows:
 - **Danger level** — 🟢 safe, 🟡 caution, 🔴 risky
 - **Exact undo command** to reverse it
 
-## Install
-
-### From source
-
-```bash
-git clone https://github.com/CuteAnimeGirl1337/git-undo.git
-cd git-undo
-bun install
-```
-
-Then either run it directly:
-```bash
-bun src/index.ts
-```
-
-Or build and link it globally so you can use `git-undo` anywhere:
-```bash
-bun run build
-npm link
-git-undo
-```
+---
 
 ## Usage
 
 ```bash
-# Show your recent git actions (default)
-git-undo
-
-# Same thing, explicitly
-git-undo list
-
-# Undo your last action (asks for confirmation)
-git-undo last
-
-# Undo without confirmation
-git-undo last -y
-
-# Show details of action #3
-git-undo show 3
-
-# Undo a specific action by index
-git-undo undo 3
-
-# Show more history
-git-undo list -n 25
+git-undo                # Show recent actions (default)
+git-undo list           # Same thing, explicitly
+git-undo list -n 25     # Show more history
+git-undo last           # Undo last action (asks for confirmation)
+git-undo last -y        # Undo without confirmation
+git-undo show 3         # Show details of action #3
+git-undo undo 3         # Undo a specific action by index
 ```
 
 ## Danger Levels
@@ -87,23 +85,16 @@ git-undo list -n 25
 |-------|---------|
 | 🟢 **safe** | Easily reversible (checkout, simple commit) |
 | 🟡 **caution** | Modifies history, but recoverable (amend, merge, pull) |
-| 🔴 **risky** | May lose uncommitted work (rebase, hard reset) — asks for extra confirmation |
+| 🔴 **risky** | May lose uncommitted work (rebase, hard reset) |
 
 ## Supported Actions
 
-- `commit` / `commit --amend`
-- `checkout` / `switch`
-- `merge`
-- `rebase`
-- `reset`
-- `pull`
-- `cherry-pick`
-- `stash`
+`commit` · `commit --amend` · `checkout` / `switch` · `merge` · `rebase` · `reset` · `pull` · `cherry-pick` · `stash`
 
 ## Requirements
 
 - Git 2.x+
-- [Bun](https://bun.sh) (for building from source)
+- [Bun](https://bun.sh)
 
 ## License
 
