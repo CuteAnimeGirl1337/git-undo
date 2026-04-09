@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "bun src/index.ts",
-    "build": "bun build src/index.ts --outfile bin/git-undo.js --target node",
+    "build": "bun build src/index.ts --outfile bin/git-undo.js --target bun",
     "dev": "bun --watch src/index.ts"
   },
   "keywords": ["git", "undo", "cli", "developer-tools"],

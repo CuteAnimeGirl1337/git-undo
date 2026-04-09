@@ -27,7 +27,7 @@ bun src/index.ts
 ### Install globally (use `git-undo` from anywhere)
 
 ```bash
-bun build src/index.ts --outfile bin/git-undo.js --target node
+bun build src/index.ts --outfile bin/git-undo.js --target bun
 bun link
 ```
 
