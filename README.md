@@ -2,6 +2,10 @@
 
 > Undo git mistakes in plain English. No more deciphering `git reflog`.
 
+<p align="center">
+  <img src="demo.svg" alt="git-undo demo" width="700">
+</p>
+
 Every developer has panicked after a bad `git reset`, accidental `commit --amend`, or wrong branch checkout. `git-undo` shows your recent actions in **human-readable language** and lets you reverse them with one command.
 
 ## Before & After
