@@ -25,6 +25,53 @@ export async function isGitRepo(): Promise<boolean> {
 }
 
 /**
+ * Check if there are uncommitted changes (staged or unstaged).
+ */
+export async function hasUncommittedChanges(): Promise<boolean> {
+  try {
+    const result = await $`git status --porcelain`.quiet();
+    return result.text().trim().length > 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if we're in the middle of a rebase, merge, or cherry-pick.
+ */
+export async function getInProgressOperation(): Promise<string | null> {
+  try {
+    const gitDir = (await $`git rev-parse --git-dir`.quiet()).text().trim();
+
+    // Check rebase
+    try {
+      await $`test -d ${gitDir}/rebase-merge`.quiet();
+      return "rebase";
+    } catch {}
+    try {
+      await $`test -d ${gitDir}/rebase-apply`.quiet();
+      return "rebase";
+    } catch {}
+
+    // Check merge
+    try {
+      await $`test -f ${gitDir}/MERGE_HEAD`.quiet();
+      return "merge";
+    } catch {}
+
+    // Check cherry-pick
+    try {
+      await $`test -f ${gitDir}/CHERRY_PICK_HEAD`.quiet();
+      return "cherry-pick";
+    } catch {}
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Parse the git reflog into human-readable entries.
  */
 export async function getReflog(count: number = 20): Promise<ReflogEntry[]> {
@@ -109,13 +156,15 @@ function parseAction(
     };
   }
 
-  // checkout / switch
+  // checkout / switch — also detect branch creation
   if (r.startsWith("checkout:")) {
     const detail = raw.replace(/^checkout:\s*/i, "");
     const branchMatch = detail.match(
       /moving from (\S+) to (\S+)/
     );
     if (branchMatch) {
+      // Detect if the target hash equals the source hash — indicates branch creation
+      // (When creating a branch, git checks out to the same commit)
       return {
         action: "checkout",
         detail,
@@ -202,7 +251,20 @@ function parseAction(
     };
   }
 
-  // branch (creation via clone, etc.)
+  // branch creation: "branch: Created from ..."
+  if (r.startsWith("branch: created from")) {
+    const detail = raw.replace(/^branch:\s*/i, "");
+    const fromMatch = detail.match(/Created from\s+(.+)/i);
+    return {
+      action: "branch-create",
+      detail,
+      description: `Created branch from ${fromMatch ? fromMatch[1] : "unknown"}`,
+      danger: "safe",
+      undoCommand: null, // branch creation is benign; deleting requires knowing the name
+    };
+  }
+
+  // branch (other operations, clone)
   if (r.startsWith("clone:") || r.startsWith("branch:")) {
     return {
       action: "branch",
@@ -213,14 +275,24 @@ function parseAction(
     };
   }
 
-  // stash
+  // stash — detailed detection
   if (r.includes("stash")) {
+    // "WIP on branch: hash message" is a stash push
+    if (r.startsWith("wip on") || r.startsWith("on ") || r.includes("stash:")) {
+      return {
+        action: "stash",
+        detail: raw,
+        description: `Stashed changes: ${raw}`,
+        danger: "safe",
+        undoCommand: `git stash pop`,
+      };
+    }
     return {
       action: "stash",
       detail: raw,
       description: `Stash operation: ${raw}`,
       danger: "safe",
-      undoCommand: null,
+      undoCommand: `git stash pop`,
     };
   }
 

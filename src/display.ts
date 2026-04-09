@@ -24,6 +24,8 @@ const ACTION_ICONS: Record<string, string> = {
   merge: "🔀",
   "cherry-pick": "🍒",
   branch: "🌿",
+  "branch-create": "🌱",
+  "branch-delete": "🗑️ ",
   stash: "📦",
   unknown: "❔",
 };
@@ -41,25 +43,42 @@ export function displayEntries(entries: ReflogEntry[]): void {
   );
   console.log();
 
-  for (const entry of entries) {
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i];
     const icon = ACTION_ICONS[entry.action] || "❔";
     const dangerLabel = DANGER_LABELS[entry.danger];
     const color = DANGER_COLORS[entry.danger];
     const hashShort = chalk.dim(entry.hash.slice(0, 7));
+    const indexTag = chalk.bold.white(`#${i}`);
 
     console.log(
-      `  ${icon} ${color(entry.description)}  ${hashShort}  ${chalk.dim(entry.timestamp)}`
+      `  ${indexTag}  ${icon} ${color(entry.description)}  ${hashShort}  ${chalk.dim(entry.timestamp)}`
     );
 
     if (entry.undoCommand) {
       console.log(
-        `     ${dangerLabel}  undo: ${chalk.cyan(entry.undoCommand)}`
+        `       ${dangerLabel}  undo: ${chalk.cyan(entry.undoCommand)}`
       );
     } else {
-      console.log(`     ${dangerLabel}  ${chalk.dim("no simple undo available")}`);
+      console.log(`       ${dangerLabel}  ${chalk.dim("no simple undo available")}`);
     }
     console.log();
   }
+}
+
+export function displayEntriesJson(entries: ReflogEntry[]): void {
+  const output = entries.map((entry, i) => ({
+    index: i,
+    hash: entry.hash,
+    prevHash: entry.prevHash,
+    action: entry.action,
+    detail: entry.detail,
+    description: entry.description,
+    danger: entry.danger,
+    undoCommand: entry.undoCommand,
+    timestamp: entry.timestamp,
+  }));
+  console.log(JSON.stringify(output, null, 2));
 }
 
 export function displayUndoPreview(entry: ReflogEntry): void {
@@ -104,6 +123,47 @@ export function displayUndoPreview(entry: ReflogEntry): void {
   }
 }
 
+export function displayInteractiveList(
+  entries: ReflogEntry[],
+  selectedIndex: number
+): void {
+  // Move cursor to top-left and clear screen
+  process.stdout.write("\x1B[H\x1B[2J");
+
+  console.log();
+  console.log(
+    chalk.bold("  git-undo interactive") +
+      chalk.dim("  (↑/↓ navigate, Enter to undo, q to quit)")
+  );
+  console.log();
+
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i];
+    const icon = ACTION_ICONS[entry.action] || "❔";
+    const dangerLabel = DANGER_LABELS[entry.danger];
+    const color = DANGER_COLORS[entry.danger];
+    const hashShort = chalk.dim(entry.hash.slice(0, 7));
+    const isSelected = i === selectedIndex;
+
+    const cursor = isSelected ? chalk.cyan.bold("> ") : "  ";
+    const indexTag = chalk.bold.white(`#${i}`);
+    const highlight = isSelected ? chalk.underline : (s: string) => s;
+
+    console.log(
+      `${cursor}${indexTag}  ${icon} ${highlight(color(entry.description))}  ${hashShort}  ${chalk.dim(entry.timestamp)}`
+    );
+
+    if (entry.undoCommand) {
+      console.log(
+        `       ${dangerLabel}  undo: ${chalk.cyan(entry.undoCommand)}`
+      );
+    } else {
+      console.log(`       ${dangerLabel}  ${chalk.dim("no simple undo available")}`);
+    }
+    console.log();
+  }
+}
+
 export function displaySuccess(command: string): void {
   console.log(chalk.green.bold("  ✓ Done!") + chalk.dim(` Ran: ${command}`));
   console.log();
@@ -112,4 +172,8 @@ export function displaySuccess(command: string): void {
 export function displayError(message: string): void {
   console.log(chalk.red.bold(`  ✗ ${message}`));
   console.log();
+}
+
+export function displayWarning(message: string): void {
+  console.log(chalk.yellow.bold(`  ⚠  ${message}`));
 }
