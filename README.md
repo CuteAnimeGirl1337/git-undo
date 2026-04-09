@@ -70,14 +70,27 @@ Each action shows:
 ## Usage
 
 ```bash
-git-undo                # Show recent actions (default)
-git-undo list           # Same thing, explicitly
+git-undo                # Interactive mode — navigate with arrow keys, Enter to undo
+git-undo list           # List recent actions
 git-undo list -n 25     # Show more history
+git-undo list --json    # Machine-readable JSON output
 git-undo last           # Undo last action (asks for confirmation)
 git-undo last -y        # Undo without confirmation
 git-undo show 3         # Show details of action #3
 git-undo undo 3         # Undo a specific action by index
+git-undo diff           # Preview what changes if you undo the last action
+git-undo diff -n 3      # Preview diff for action #3
 ```
+
+### Interactive mode
+
+Running `git-undo` with no arguments opens an interactive picker. Use arrow keys (or `j`/`k`) to navigate, `Enter` to undo the selected action, `q` to quit.
+
+### Safety checks
+
+Before executing risky undos (rebase, hard reset), git-undo automatically checks for:
+- Uncommitted changes that could be lost
+- In-progress rebases, merges, or cherry-picks
 
 ## Danger Levels
 

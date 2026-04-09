@@ -75,20 +75,28 @@ export async function getInProgressOperation(): Promise<string | null> {
  * Parse the git reflog into human-readable entries.
  */
 export async function getReflog(count: number = 20): Promise<ReflogEntry[]> {
-  const result =
-    await $`git reflog --format="%H %P %gd %gs %ci" -n ${count}`.quiet();
+  if (count <= 0) count = 20;
+  let result;
+  try {
+    result = await $`git reflog --format="%H %P %gd %gs %ci" -n ${count}`.quiet();
+  } catch {
+    return [];
+  }
   const lines = result.text().trim().split("\n").filter(Boolean);
 
   const entries: ReflogEntry[] = [];
 
   for (const line of lines) {
-    // Format: hash parent HEAD@{n} action timestamp
+    // Format: hash parent1 [parent2...] HEAD@{n} action timestamp
+    // Merge commits have multiple parents, so we match greedily up to HEAD@{n}
     const match = line.match(
-      /^(\S+)\s*(\S*)\s+HEAD@\{(\d+)\}\s+(.+?)\s+(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}.*)$/
+      /^(\S+)\s+(.*?)\s*HEAD@\{(\d+)\}\s+(.+?)\s+(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}.*)$/
     );
     if (!match) continue;
 
-    const [, hash, prevHash, indexStr, rawAction, timestamp] = match;
+    const [, hash, parentStr, indexStr, rawAction, timestamp] = match;
+    // Take only the first parent as prevHash (for merge commits, this is the branch we merged into)
+    const prevHash = parentStr.trim().split(/\s+/)[0] || "";
     const index = parseInt(indexStr);
     const parsed = parseAction(rawAction, hash, prevHash, index);
 

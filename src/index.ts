@@ -86,7 +86,7 @@ program
     const entries = await getReflog(idx + 1);
 
     if (idx >= entries.length) {
-      displayError(`Action #${idx} not found. Only ${entries.length} actions in history.`);
+      displayError(`Action #${idx} not found. Only ${entries.length} ${entries.length === 1 ? "action" : "actions"} in history.`);
       return;
     }
 
